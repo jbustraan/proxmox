@@ -1,0 +1,8 @@
+galaxy_info:
+    author: jim bustraan
+    description: Home Lab test using Ansible
+    company: Bustraan, Inc
+    license: license (GPLv2, CC-BY, etc)
+    min_ansible_version: 2.4
+    galaxy_tags: []
+dependencies: []

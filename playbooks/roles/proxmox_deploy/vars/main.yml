@@ -1,0 +1,7 @@
+eth0:
+    params:
+        netmask: 24
+        vmbr: 0
+        gateway: 192.168.1.1
+        dnsservers: "192.168.1.247"
+        searchdomain: bustraan.lab

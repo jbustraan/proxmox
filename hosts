@@ -1,0 +1,9 @@
+[pve1]
+pve1.bustraan.lab ansible_ssh_host=pve1.bustraan.lab
+
+[pve2]
+pve2.bustraan.lab ansible_ssh_host=pve2.bustraan.lab
+
+[proxmoxs:children]
+pve1
+pve2
