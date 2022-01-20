@@ -1,15 +1,15 @@
 ---
 # tasks file for proxmox_deploy
-    -  name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" 
-       proxmox_kvm:
-            api_user : root@pam
-            api_password: "{{ PV_password }}"
-            api_host : "{{ default_proxmox_node }}"
-            name : "{{ VM_name }}"
-            node : "{{ default_proxmox_node }}"
-            clone: "{{ VM_template }}"
-            timeout: 300
-       tags: provission,test
+    - name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" 
+      proxmox_kvm:
+        api_user : root@pam
+        api_password: "{{ PV_password }}"
+        api_host : "{{ default_proxmox_node }}"
+        name : "{{ VM_name }}"
+        node : "{{ default_proxmox_node }}"
+        clone: "{{ VM_template }}"
+        timeout: 300
+      tags: provission,test
 
     - name: Increasing disk if it is necessary
       shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm resize $A {{ default_disk }} +{{ VM_INCREASE_DISK }}G
@@ -19,20 +19,20 @@
     - name: Waiting to apply cloud init changes in disk
       wait_for:
         timeout: 5
-        tags: provission
+      tags: provission
 
     - name: starting new Virtual Machine to change IPv4 configuration, it is necessary
       proxmox_kvm:
-            api_user : root@pam
-            api_password: "{{ PV_password }}"
-            api_host : "{{ default_proxmox_node }}"
-            name : "{{ VM_name }}"
-            node : "{{ default_proxmox_node }}"
-            state : started
-            timeout: 300
-      when: '"{{ VM_INCREASE_DISK }}" != "0"'
-      register: wait
-      tags: provission
+        api_user : root@pam
+        api_password: "{{ PV_password }}"
+        api_host : "{{ default_proxmox_node }}"
+        name : "{{ VM_name }}"
+        node : "{{ default_proxmox_node }}"
+        state : started
+        timeout: 300
+        when: '"{{ VM_INCREASE_DISK }}" != "0"'
+        register: wait
+        tags: provission
 
     - name: Waiting to start virtual server machine completely
       wait_for:
@@ -48,15 +48,15 @@
 
     - name: stopping new Virtual Machine to change IPv4 configuration, it is necessary
       proxmox_kvm:
-            api_user : root@pam
-            api_password: "{{ PV_password }}"
-            api_host : "{{ default_proxmox_node }}"
-            name : "{{ VM_name }}"
-            node : "{{ default_proxmox_node }}"
-            state : stopped
-            timeout: 300
-      when: '"{{ VM_network }}" != "vlan10" or "{{ VM_INCREASE_DISK }}" != "0"'
-      tags: provission
+        api_user : root@pam
+        api_password: "{{ PV_password }}"
+        api_host : "{{ default_proxmox_node }}"
+        name : "{{ VM_name }}"
+        node : "{{ default_proxmox_node }}"
+        state : stopped
+        timeout: 300
+        when: '"{{ VM_network }}" != "vlan10" or "{{ VM_INCREASE_DISK }}" != "0"'
+        tags: provission
 
     - name: Loading set up for Virtual Machine. Assigning correct bridge in network interface
       shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm set $A - net0 'virtio,bridge=vmbr{{ item.value.vmbr }}'
@@ -66,8 +66,8 @@
 
     - debug: 
         msg: "item.key {{ item.key }} item.value {{ item.value }} item.value.netmask {{ item.value.netmask }} item.value.vmbr {{ item.value.vmbr }}"
-        with_dict: "{{ vars[VM_network] }}"
-        tags: provission
+      with_dict: "{{ vars[VM_network] }}"
+      tags: provission
 
     - name: Loading set up for Virtual Machine. Assigning IP, sockets, cores and memory for Virtual Machine
       shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm set $A - ipconfig0 'ip={{ VM_IP }}/{{ item.value.netmask }},gw={{ item.value.gateway }}' - nameserver '{{ item.value.dnsservers }}' - searchdomain '{{ item.value.searchdomain }}' - memory '{{ VM_memory }}' - sockets '{{ VM_sockets }}' - cores '{{ VM_cores }}'
@@ -77,7 +77,7 @@
 
     - debug:
         var: current_ip
-        tags: provission
+      tags: provission
 
     - name: Loading set up for Virtual Machine. Assigning IP automatically, sockets, cores and memory for Virtual Machine
       shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm set $A - ipconfig0 'ip={{ current_ip.stdout }}/{{ item.value.netmask }},gw={{ item.value.gateway }}' - nameserver '{{ item.value.dnsservers }}' - searchdomain '{{ item.value.searchdomain }}' - memory '{{ VM_memory }}' - sockets '{{ VM_sockets }}' - cores '{{ VM_cores }}'
@@ -95,25 +95,25 @@
 
     - name: starting new Virtual Machine in current proxmox node
       proxmox_kvm:
-            api_user : root@pam
-            api_password: "{{ PV_password }}"
-            api_host : "{{ default_proxmox_node }}"
-            name : "{{ VM_name }}"
-            node : "{{ default_proxmox_node }}"
-            state : started
-            timeout: 300
-      when: '"{{ PV_node }}" == "none"'
-      tags: provission
+        api_user : root@pam
+        api_password: "{{ PV_password }}"
+        api_host : "{{ default_proxmox_node }}"
+        name : "{{ VM_name }}"
+        node : "{{ default_proxmox_node }}"
+        state : started
+        timeout: 300
+        when: '"{{ PV_node }}" == "none"'
+        tags: provission
 
     - name: starting new Virtual Machine in correct proxmox node
       proxmox_kvm:
-            api_user : root@pam
-            api_password: "{{ PV_password }}"
-            api_host : "{{ PV_node }}" 
-            name : "{{ VM_name }}"
-            node : "{{ PV_node }}"
-            state : started
-            timeout: 300
-      delegate_to: "{{ PV_node }}"
-      when: '"{{ PV_node }}" != "none"'
-      tags: provission
+        api_user : root@pam
+        api_password: "{{ PV_password }}"
+        api_host : "{{ PV_node }}" 
+        name : "{{ VM_name }}"
+        node : "{{ PV_node }}"
+        state : started
+        timeout: 300
+        delegate_to: "{{ PV_node }}"
+        when: '"{{ PV_node }}" != "none"'
+        tags: provission
