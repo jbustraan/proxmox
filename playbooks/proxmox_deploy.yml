@@ -1,5 +1,5 @@
 - name: 'prep proxmox hosts for automation'
-  hosts: 'proxmox1'
+  hosts: 'pve1'
   vars_prompt:
   - name: PV_password
     prompt: "Node Password"
@@ -38,4 +38,4 @@
   user: root
   gather_facts: false
   roles:
-    - { role: proxmox_deploy, default_proxmox_node: proxmox1 }
+    - { role: proxmox_deploy, default_proxmox_node: pve1 }

@@ -1,13 +1,9 @@
-[proxmox1]
+[pve1]
 pve1.bustraan.lab
 
-[proxmox2]
+[pve2]
 pve2.bustraan.lab
 
 [proxmoxs:children]
-proxmox1
-proxmox2
-
-
-
-
+pve1
+pve2
