@@ -1,8 +1,9 @@
 ---
 # defaults file for proxmox_deploy
 VM_template: testvm4
-default_disk: virtio0
+default_disk: scsi0
 default_interface: eth0
 default_volume: /dev/sda
 default_partition: 2
 template_name: almalinux8-cloudinit-template-9002
+#template_name: testvm4
