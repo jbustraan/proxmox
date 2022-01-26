@@ -1,0 +1,20 @@
+## /network-config on NoCloud cidata disk
+## version 1 format is supported by RHEL/Almalinux
+## version 2 is completely different, see the docs
+## version 2 is not supported by Fedora
+---
+version: 1
+config:
+- type: physical
+  name: eth0
+  subnets:
+  - type: static
+    address: IPADDR
+    netmask: 255.255.255.0
+    routes:
+    - network: 0.0.0.0
+      netmask: 0.0.0.0
+      gateway: 192.168.1.1
+- type: nameserver
+  address: [192.168.1.247]
+  search: [bustraan.lab, bustraan.net]

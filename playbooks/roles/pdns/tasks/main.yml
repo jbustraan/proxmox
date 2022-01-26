@@ -1,0 +1,65 @@
+### script to test url: built-in
+### powerdns - create new A record
+---
+#- hosts: dns.bustraan.lab
+#  become: yes
+#  tasks:
+  - name: Check if {{ record_type }} record for {{ VM_name }} exist
+    uri:
+      method: GET
+      url: "https://{{ pdns_server_ip }}/api/v1/servers/localhost/zones/\
+            {{ domain }}"
+      body_format: json
+      headers:
+        'X-API-Key': "{{ pdns_api_pass }}"
+      return_content: true
+      status_code:
+        - 200
+        - 404
+      validate_certs: false
+    register: pdns_record_check
+
+  - name: Create {{ record_type }} record for {{ VM_name }}
+    uri:
+      method: PATCH
+      url: "https://{{ pdns_server_ip }}/api/v1/servers/localhost/zones/\
+            {{ domain }}"
+      body:
+        rrsets:
+          - name: "{{ VM_name }}.{{ domain }}."
+            type: "{{ record_type }}"
+            ttl: 3600
+            changetype: REPLACE
+            records:
+              - content: "{{ _ipam2.json.data }}"
+                disabled: false
+            comments:
+              - content: "Ansible managed IP"
+                account: "Ansible"
+      body_format: json
+      headers:
+        'X-API-Key': "{{ pdns_api_pass }}"
+      return_content: true
+      status_code:
+        - 204
+      validate_certs: false
+    register: pdns_record
+    when: >
+      (pdns_record_check.json.rrsets |
+      selectattr('name', 'match', VM_name + "." + domain ) | first)
+      is not defined
+      or
+      (pdns_record_check.json.rrsets |
+      selectattr('name', 'match', VM_name + "." + domain) | first |
+      json_query('records[0].content') != _ipam2.json.data)
+    changed_when: >
+      ((pdns_record_check.json.rrsets |
+      selectattr('name', 'match', VM_name + "." + domain) | first)
+      is not defined
+      or
+      (pdns_record_check.json.rrsets |
+      selectattr('name', 'match', VM_name + "." + domain) | first |
+      json_query('records[0].content') != _ipam2.json.data))
+      and
+      "'OK' in pdns_record.msg"
+

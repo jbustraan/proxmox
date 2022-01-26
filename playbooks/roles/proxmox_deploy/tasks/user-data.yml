@@ -1,0 +1,63 @@
+#cloud-config
+
+users:
+  - name: jbustraan
+    ssh_pwauth: yes #  sshd will be configured to accept password authentication
+    password: '2morrow!!' # Set a password for almalinux Cloud User
+    chpasswd:
+      expire: false
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC5CpbfMU9J8jVcwVX3NszKHEIeDDjXfG/ksYKCeC+N1W7WUtqS9hLZjHPR5an+u3VoIMQgDyKxZNZqI2FuFVQWaO7QT88izKaAhICE7X+ht/9GXQ0UD+x5cwrq4VdliVwkTER3SSoAMMkh+YfVnD24FCNUtxJ6rsKtnQ9K7b7bznh9jBBDkUQsN3X/jZpTIKWaNUfGSu0zM05QVTirhzzE9Z0m5oC5yrgfunEL33fyWlfOAJO/FjIhmiFyNDMscZ+nlv7wURAoyynVtgljOpvcK1vVZp2bW6MSANWDC3RSV6TxFD28M/jl3J4S2IytA2dcJD+qaRhdXjf0Mo5fk/7p jbustraan@jims-hp-laptop
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJ7n5qL8TRvglTWC7urBdnviml1568CF33gseX/6woRnm6+zBWg2f0comvZVD88bNT3SFaFuhrtL70PAv3jTMIXUlui5lcisNK6paEAUmT4Iz3FVDJjYpX/oLM3XBIilY+i4J3niKPhTxw8utxb6VkdNBsIv1qVETNwr9PU2LTcbF13Z3NhWOoRvwMNJZDeQHYOnXnpSRVTB0Xqho5Qy8pTWmYv5v8P59JLG9tF8kgmkIzxpscKTouqP1FnIg6jvda/5/gwpQXZN2LeF/NLIimMzHgqE1+5BpT2kzAyMpJMbDrVZtgL/6/6derSx9l13/vl5mcTJ+cWFuRhSnZp+rn jbustraan@Ubuntu-Desktop
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+  - name: ansible
+    ssh_pwauth: yes #  sshd will be configured to accept password authentication
+    password: '2morrow!!' # Set a password for almalinux Cloud User
+    chpasswd:
+      expire: false
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJdEF6U0nqGJ3r6JYtRTNEMLT+BGAjrYC/z4bSjCqoij ansible@ansible.bustraan.net
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    groups: sudo
+    shell: /bin/bash
+chpasswd:
+  list: |
+    root:2morrow!!
+    jbustraan:2morrow!!
+  expire: False
+
+preserve_hostname: false
+prefer_fqdn_over_hostname: true
+fqdn: BLANKVM.bustraan.lab
+hostname: BLANKVM
+
+ntp:
+  enabled: true
+  ntp_client: chrony
+
+locale: en_US.UTF-8
+
+timezone: America/New_York
+
+rsyslog:
+ - filename: graylog.conf
+   content: "*.* @graylog.bustraan.net:1514;RSYSLOG_SyslogProtocol23Format"
+
+packages:
+ - python3
+ - wget
+ - qemu-guest-agent
+
+resize_rootfs: true
+
+swap:
+  filename: /swapfile
+  size: "2147483648"
+  maxsize: "2147483648"
+
+runcmd:
+  - /usr/sbin/swapon /swapfile
+    #  - systemctl mask cloud-init-local cloud-init cloud-config cloud-final
+
