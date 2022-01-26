@@ -1,4 +1,4 @@
-- name: 'prep proxmox hosts for automation'
+- name: 'Prepare proxmox hosts for automation'
   hosts: 'pve1'
   vars_prompt:
   - name: PV_password
@@ -7,35 +7,12 @@
   - name: VM_name
     prompt: "VM name"
     private: no
-  - name: VM_network
-    prompt: "Network associated to ipconfig0"
-    private: no
-    default: eth0
-  - name: VM_IP
-    prompt: "VM IP"
-    private: no
-    default: 192.168.1.190
-  - name: VM_sockets
-    prompt: "VM socket/s"
-    private: no
-    default: 1
-  - name: VM_cores
-    prompt: "VM core/s"
-    private: no
-    default: 1
-  - name: VM_memory
-    prompt: "VM RAM Memory (MB)"
-    private: no
-    default: 1024
-  - name: VM_INCREASE_DISK
-    prompt: "Increase virtio0 disk (10 GB) in"
-    private: no
-    default: 0
-  - name: PV_node
-    prompt: "Migrate Virtual Machine to"
-    private: no
-    default: none
+    #  - name: VM_IP
+    #prompt: "VM IP"
+    #private: no
+    #default: 192.168.1.190
   user: root
   gather_facts: false
   roles:
     - { role: proxmox_deploy, default_proxmox_node: pve1 }
+    - { role: pdns, hosts: dns.bustraan.lab }

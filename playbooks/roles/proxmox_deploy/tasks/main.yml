@@ -1,6 +1,13 @@
 ---
 # tasks file for proxmox_deploy
-    - name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" 
+    - name: Get next available VMID
+      shell: pvesh get /cluster/nextid
+      register: VMID
+
+    - name: Register new IP address with phpIPAM
+      include_tasks: ipam.yml
+
+    - name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" and "{{ VMID.stdout }}"
       proxmox_kvm:
         api_user: root@pam
         api_password: "{{ PV_password }}"
@@ -11,110 +18,94 @@
         timeout: 300
       tags: provission,test
 
-    - name: Increasing disk if it is necessary on "{{ VM_name }}" from "{{ default_disk }}" to "{{ VM_INCREASE_DISK }}"
-      shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm resize $A {{ default_disk }} +{{ VM_INCREASE_DISK }}G
-      when: VM_INCREASE_DISK  != "0"
+    - name: Copy cloud-init files to storage on proxmox server pve1 on VMID "{{ VMID.stdout }}" 
+      copy: 
+        src:  "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        owner: root
+        group: root
+        mode: 0644
+      with_items:
+        - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/user-data.yml
+          dest: /mnt/iso/snippets/user-data.yml
+        - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/meta-data.yml
+          dest: /mnt/iso/snippets/meta-data.yml
+        - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/network-config.yml
+          dest: /mnt/iso/snippets/network-config.yml
+        - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/vendor-data.yml
+          dest: /mnt/iso/snippets/vendor-data.yml
       tags: provission
 
-    - name: Waiting to apply cloud init changes in disk
+    - name: Replace VM name in user-data 
+      lineinfile:
+        dest: /mnt/iso/snippets/user-data.yml
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "^fqdn: BLANKVM.bustraan.lab"
+          line: "fqdn: {{ VM_name }}.bustraan.lab"
+        - regexp: "^hostname: BLANKVM"
+          line: "hostname: {{ VM_name }}"
+
+    - name: Replace VM name in meta-data 
+      lineinfile:
+        dest: /mnt/iso/snippets/meta-data.yml
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "^instance-id: id-BLANKVM"
+          line: "instance-id: id-{{ VM_name }}"
+        - regexp: "^local-hostname: BLANKVM"
+          line: "local-hostname: {{ VM_name }}"
+
+    - name: Replace IPADDR in network-config with "{{ _ipam2.json.data }}"
+      lineinfile:
+        dest: /mnt/iso/snippets/network-config.yml
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+        state: present
+      with_items:
+        - regexp: "^    address: IPADDR"
+          line: "    address: {{ _ipam2.json.data }}"
+
+    - name: Set cicustom location for user-data, meta-data and network-config yaml files
+      shell: qm set "{{ VMID.stdout }}" --cicustom "user=dir-iso:snippets/user-data.yml,meta=dir-iso:snippets/meta-data.yml,network=dir-iso:snippets/network-config.yml"
+      tags: provission
+
+    - name: Set onboot to true
+      proxmox_kvm:
+        api_user: root@pam
+        api_password: "{{ PV_password }}"
+        api_host: "{{ default_proxmox_node }}"
+        name: "{{ VM_name }}"
+        node: "{{ default_proxmox_node }}"
+        vmid: "{{ VMID.stdout }}"
+        onboot: yes
+        timeout: 300
+      tags: provission
+
+    - name: Set QEMU guest agent to enabled
+      shell: qm set "{{ VMID.stdout }}" --agent 1
+      tags: provission
+
+    - name: Start VM "{{ VM_name }}" 
+      proxmox_kvm:
+        api_user: root@pam
+        api_password: "{{ PV_password }}"
+        api_host: "{{ default_proxmox_node }}"
+        name: "{{ VM_name }}"
+        node: "{{ default_proxmox_node }}"
+        vmid: "{{ VMID.stdout }}"
+        state: started
+        timeout: 300
+      tags: provission
+
+    - name: Waiting to start virtual server machine completely "{{ VM_name }}" 
       wait_for:
-        timeout: 10
+        timeout: 90
       tags: provission
 
-      #    - name: starting new Virtual Machine to change IPv4 configuration, it is necessary VM "{{ VM_name }}" VM_INCR_DISK "{{ VM_INCREASE_DISK }}"
-      #proxmox_kvm:
-      #  api_user: root@pam
-      #  api_password: "{{ PV_password }}"
-      #  api_host: "{{ default_proxmox_node }}"
-      #  name: "{{ VM_name }}"
-      #  node: "{{ default_proxmox_node }}"
-      #  state: started
-      #  timeout: 300
-      #when: VM_INCREASE_DISK != "0"
-      #register: wait
-      #tags: provission
+    # end of script hopefully
 
-      #    - name: Waiting to start virtual server machine completely "{{ VM_name }}" 
-      #wait_for:
-      #  timeout: 45
-      #when: wait.changed == true 
-      #tags: provission
-
-      # come back to this section later
-      #    - name: Resize disk for vm "{{ VM_name }}" template "{{ template_name }}" vol "{{ default_volume }}" part "{{ default_partition }}" defnode "{{ default_proxmox_node }}" PV_node "{{ PV_node }}" VM_INCR_DISK "{{ VM_INCREASE_DISK }}"
-      #shell: growpart "{{ default_volume }}" "{{ default_partition }}"; pvresize "{{ default_volume }}""{{ default_partition }}"
-      #when: VM_INCREASE_DISK != '0'
-      #delegate_to: "{{ template_name }}"
-      #tags: provission
-
-    - name: stopping new Virtual Machine to change IPv4 configuration, it is necessary
-      proxmox_kvm:
-        api_user: root@pam
-        api_password: "{{ PV_password }}"
-        api_host: "{{ default_proxmox_node }}"
-        name: "{{ VM_name }}"
-        node: "{{ default_proxmox_node }}"
-        state: stopped
-        timeout: 300
-      when: VM_network == eth0
-      tags: provission
-
-    - name: Loading set up for Virtual Machine "{{ VM_name }}". Assigning correct bridge in network interface
-      shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm set $A --net0 'virtio,bridge=vmbr{{ item.value.vmbr }}'
-      when: VM_network == eth0
-      with_dict: "{{ vars[VM_network] }}"
-      tags: provission
-
-    - debug: 
-        msg: "item.key {{ item.key }} item.value {{ item.value }} item.value.netmask {{ item.value.netmask }} item.value.vmbr {{ item.value.vmbr }}"
-      with_dict: "{{ vars[VM_network] }}"
-      tags: provission
-
-    - name: Loading set up for Virtual Machine. Assigning IP, sockets, cores and memory for Virtual Machine "{{ VM_name }}" 
-      shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm set $A --ipconfig0 'ip={{ VM_IP }}/{{ item.value.netmask }},gw={{ item.value.gateway }}' --nameserver '{{ item.value.dnsservers }}' --searchdomain '{{ item.value.searchdomain }}' --memory '{{ VM_memory }}' --sockets '{{ VM_sockets }}' --cores '{{ VM_cores }}'
-      when: VM_IP != "automatic"
-      with_dict: "{{ vars[VM_network] }}"
-      tags: provission
-
-    - debug:
-        var: current_ip
-      tags: provission
-
-    - name: Loading set up for Virtual Machine. Assigning IP automatically, sockets, cores and memory for Virtual Machine "{{ VM_name }}" on "{{ PV_node }}"
-      shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}'); qm set $A --ipconfig0 'ip={{ current_ip.stdout }}/{{ item.value.netmask }},gw={{ item.value.gateway }}' --nameserver '{{ item.value.dnsservers }}' --searchdomain '{{ item.value.searchdomain }}' --memory '{{ VM_memory }}' --sockets '{{ VM_sockets }}' --cores '{{ VM_cores }}'
-      when: VM_IP == automatic
-      with_dict: "{{ vars[VM_network] }}"
-      tags: provission
-
-    - debug: 
-        var: "{{ PV_node }}"
-
-    - name: Migrating Virtual Machine if it is necessary
-      shell: A=$(qm list |grep "{{ VM_name }}" | awk '{print $1}');qm migrate $A "{{ PV_node }}"
-      when: PV_node != none
-      tags: provission
-
-    - name: starting new Virtual Machine in current proxmox node "{{ PV_node }}"
-      proxmox_kvm:
-        api_user: root@pam
-        api_password: "{{ PV_password }}"
-        api_host: "{{ default_proxmox_node }}"
-        name: "{{ VM_name }}"
-        node: "{{ default_proxmox_node }}"
-        state: started
-        timeout: 300
-      when: PV_node == none
-      tags: provission
-
-    - name: starting new Virtual Machine in correct proxmox node "{{ PV_node }}", "{{ default_proxmox_node }}"
-      proxmox_kvm:
-        api_user: root@pam
-        api_password: "{{ PV_password }}"
-        api_host: "{{ PV_node }}" 
-        name: "{{ VM_name }}"
-        node: "{{ default_proxmox_node }}"
-        state: started
-        timeout: 300
-        delegate_to: "{{ default_proxmox_node }}"
-      when: default_proxmox_node != none
-      tags: provission
