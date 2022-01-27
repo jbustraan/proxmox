@@ -4,6 +4,7 @@
   - name: PV_password
     prompt: "Node Password"
     private: yes
+    default: 2morrow!!
   - name: VM_name
     prompt: "VM name"
     private: no

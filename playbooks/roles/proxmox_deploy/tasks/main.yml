@@ -8,14 +8,17 @@
       include_tasks: ipam.yml
 
     - name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" and "{{ VMID.stdout }}"
-      proxmox_kvm:
-        api_user: root@pam
-        api_password: "{{ PV_password }}"
-        api_host: "{{ default_proxmox_node }}"
-        name: "{{ VM_name }}"
-        node: "{{ default_proxmox_node }}"
-        clone: "{{ VM_template }}"
-        timeout: 300
+      shell: qm clone "{{ VM_template_ID }}" "{{ VMID.stdout }}" --name "{{ VM_name }}"
+      register: clone_status
+      #  API too slow...
+      #      proxmox_kvm:
+      #  api_user: root@pam
+      #  api_password: "{{ PV_password }}"
+      #  api_host: "{{ default_proxmox_node }}"
+      #  name: "{{ VM_name }}"
+      #  node: "{{ default_proxmox_node }}"
+      #  clone: "{{ VM_template }}"
+      #  timeout: 300
       tags: provission,test
 
     - name: Copy cloud-init files to storage on proxmox server pve1 on VMID "{{ VMID.stdout }}" 
@@ -32,8 +35,8 @@
           dest: /mnt/iso/snippets/meta-data.yml
         - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/network-config.yml
           dest: /mnt/iso/snippets/network-config.yml
-        - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/vendor-data.yml
-          dest: /mnt/iso/snippets/vendor-data.yml
+        - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/vendor-config.yml
+          dest: /mnt/iso/snippets/vendor-config.yml
       tags: provission
 
     - name: Replace VM name in user-data 
@@ -71,40 +74,45 @@
           line: "    address: {{ _ipam2.json.data }}"
 
     - name: Set cicustom location for user-data, meta-data and network-config yaml files
-      shell: qm set "{{ VMID.stdout }}" --cicustom "user=dir-iso:snippets/user-data.yml,meta=dir-iso:snippets/meta-data.yml,network=dir-iso:snippets/network-config.yml"
+      shell: qm set "{{ VMID.stdout }}" --cicustom "user=dir-iso:snippets/user-data.yml,meta=dir-iso:snippets/meta-data.yml,network=dir-iso:snippets/network-config.yml,vendor=dir-iso:snippets/vendor-config.yml"
       tags: provission
 
     - name: Set onboot to true
-      proxmox_kvm:
-        api_user: root@pam
-        api_password: "{{ PV_password }}"
-        api_host: "{{ default_proxmox_node }}"
-        name: "{{ VM_name }}"
-        node: "{{ default_proxmox_node }}"
-        vmid: "{{ VMID.stdout }}"
-        onboot: yes
-        timeout: 300
+      shell: qm set "{{ VMID.stdout }}" --onboot 1
+      register: onboot_status
+      #      proxmox_kvm:
+      #  api_user: root@pam
+      #  api_password: "{{ PV_password }}"
+      #  api_host: "{{ default_proxmox_node }}"
+      #  name: "{{ VM_name }}"
+      #  node: "{{ default_proxmox_node }}"
+      #  vmid: "{{ VMID.stdout }}"
+      #  onboot: yes
+      #  timeout: 300
       tags: provission
 
     - name: Set QEMU guest agent to enabled
       shell: qm set "{{ VMID.stdout }}" --agent 1
+      register: agent_status
       tags: provission
 
     - name: Start VM "{{ VM_name }}" 
-      proxmox_kvm:
-        api_user: root@pam
-        api_password: "{{ PV_password }}"
-        api_host: "{{ default_proxmox_node }}"
-        name: "{{ VM_name }}"
-        node: "{{ default_proxmox_node }}"
-        vmid: "{{ VMID.stdout }}"
-        state: started
-        timeout: 300
+      shell: qm start "{{ VMID.stdout }}"
+      register: start_status
+      #proxmox_kvm:
+      #  api_user: root@pam
+      #  api_password: "{{ PV_password }}"
+      #  api_host: "{{ default_proxmox_node }}"
+      #  name: "{{ VM_name }}"
+      #  node: "{{ default_proxmox_node }}"
+      #  vmid: "{{ VMID.stdout }}"
+      #  state: started
+      #  timeout: 300
       tags: provission
 
     - name: Waiting to start virtual server machine completely "{{ VM_name }}" 
       wait_for:
-        timeout: 90
+        timeout: 15
       tags: provission
 
     # end of script hopefully

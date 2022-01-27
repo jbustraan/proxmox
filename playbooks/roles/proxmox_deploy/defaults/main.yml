@@ -1,6 +1,7 @@
 ---
 # defaults file for proxmox_deploy
 VM_template: almalinux8-template-9001
+VM_template_ID: 9001
 default_disk: scsi0
 default_interface: eth0
 default_volume: /dev/sda
