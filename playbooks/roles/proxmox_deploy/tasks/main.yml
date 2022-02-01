@@ -7,9 +7,20 @@
     - name: Register new IP address with phpIPAM
       include_tasks: ipam.yml
 
-    - name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" and "{{ VMID.stdout }}"
-      shell: qm clone "{{ VM_template_ID }}" "{{ VMID.stdout }}" --name "{{ VM_name }}"
+    - name: Cloning virtual machine on pve1 from template almalinux8-template-9001 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
+      shell: qm clone 9001 "{{ VMID.stdout }}" --name "{{ VM_name }}"
       register: clone_status
+      when: PV_node == "pve1"
+
+    - name: Cloning virtual machine on pve2 from template almalinux8-template-9002 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
+      shell: qm clone 9002 "{{ VMID.stdout }}" --name "{{ VM_name }}"
+      register: clone_status
+      when: PV_node == "pve2"
+      
+      #- name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" and "{{ VMID.stdout }}"
+      #shell: qm clone "{{ VM_template_ID }}" "{{ VMID.stdout }}" --name "{{ VM_name }}"
+      #register: clone_status
+      #when: PV_node == "pve2"
       #  API too slow...
       #      proxmox_kvm:
       #  api_user: root@pam

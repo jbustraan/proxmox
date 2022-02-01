@@ -1,5 +1,5 @@
 - name: 'Prepare proxmox hosts for automation'
-  hosts: 'pve1'
+  #hosts: 'pve1'
   vars_prompt:
   - name: PV_password
     prompt: "Node Password"
@@ -8,10 +8,15 @@
   - name: VM_name
     prompt: "VM name"
     private: no
+  - name: PV_node
+    prompt: "pve1 or pve2"
+    private: no
+    default: pve1
     #  - name: VM_IP
     #prompt: "VM IP"
     #private: no
     #default: 192.168.1.190
+  hosts: "{{ PV_node }}"
   user: root
   gather_facts: false
   roles:
