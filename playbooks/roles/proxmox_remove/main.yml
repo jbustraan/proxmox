@@ -1,0 +1,15 @@
+---
+# defaults file for proxmox_deploy
+PV_password: 2morrow!!
+#VM_template: almalinux8-template-9001
+#VM_template_ID: 9001
+default_disk: scsi0
+default_interface: eth0
+default_volume: /dev/sda
+default_partition: 2
+#template_name: testvm4
+# DNS related variables
+pdns_server_ip: 192.168.1.247
+pdns_api_pass: mypdnsapikey22
+domain: bustraan.lab
+record_type: A

@@ -59,5 +59,6 @@ swap:
 
 runcmd:
   - /usr/sbin/swapon /swapfile
-  - systemctl mask cloud-init-local cloud-init cloud-config cloud-final
+  - /usr/bin/systemctl mask cloud-init-local cloud-init cloud-config cloud-final
+  - /usr/bin/systemctl stop cloud-init-local cloud-init cloud-config cloud-final
 

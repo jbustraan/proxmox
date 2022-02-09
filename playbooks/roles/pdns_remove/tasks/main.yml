@@ -1,0 +1,11 @@
+###
+---
+  - name: Increase serial after adding entry
+    shell: /usr/bin/pdnsutil increase-serial bustraan.lab
+
+  - name: Restart pdns-recursor
+    systemd:
+      name: pdns-recursor
+      state: restarted
+
+

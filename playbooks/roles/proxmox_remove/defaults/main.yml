@@ -1,0 +1,4 @@
+---
+# defaults file for proxmox_deploy
+PV_password: 2morrow!!
+domain: bustraan.lab

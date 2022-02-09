@@ -1,0 +1,53 @@
+#### main.yml for role proxmox_remove
+---
+    - name: IPAM role - Login to API and get token 
+      uri: 
+        url: https://ipam.bustraan.lab/api/ipam1/user/
+        user: apiuser
+        method: POST
+        password: APIforever22
+        force_basic_auth: yes
+        status_code: 200
+        validate_certs: no
+      register: _result
+  
+    - name: Print login _result
+      debug: 
+        msg: 
+          - "{{ _result.status }}"
+  
+    - name: Get IPAM ID of IP address to DELETE for VM "{{ VM_name }}"
+      uri:
+        url: "https://ipam.bustraan.lab/api/ipam1/addresses/search/{{ ansible_default_ipv4.address }}/"
+        method: GET
+        status_code: 
+          - 200
+          - 201
+        validate_certs: no
+        headers:
+          "token": "{{ _result.json.data.token }}"
+      register: _result2
+  
+    - name: Show search for ID status 
+      debug: 
+        msg: 
+          - "{{ _result2.json.code }}"
+          - "{{ _result2.json.data[0].id }}"
+  
+    - name: Delete IP address and associated DNS name with ID "{{ _result2.json.data[0].id }}" and IP "{{ _result2.json.data[0].ip }}"
+      uri:
+        url: "https://ipam.bustraan.lab/api/ipam1/addresses/{{ _result2.json.data[0].id }}/?remove_dns=1"
+        method: DELETE
+        status_code: 
+          - 200
+          - 201
+        validate_certs: no
+        headers:
+          "token": "{{ _result.json.data.token }}"
+      register: _result3
+  
+    - name: Show result of call
+      debug:
+        msg: "{{ _result3.json.message }}"
+  
+  

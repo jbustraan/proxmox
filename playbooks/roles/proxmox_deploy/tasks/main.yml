@@ -41,18 +41,18 @@
         mode: 0644
       with_items:
         - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/user-data.yml
-          dest: /mnt/iso/snippets/user-data.yml
+          dest: "/mnt/iso/snippets/{{ VMID.stdout }}-user-data.yml"
         - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/meta-data.yml
-          dest: /mnt/iso/snippets/meta-data.yml
+          dest: "/mnt/iso/snippets/{{ VMID.stdout }}-meta-data.yml"
         - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/network-config.yml
-          dest: /mnt/iso/snippets/network-config.yml
+          dest: "/mnt/iso/snippets/{{ VMID.stdout }}-network-config.yml"
         - src: /home/ansible/playbooks/proxmox/playbooks/roles/proxmox_deploy/tasks/vendor-config.yml
-          dest: /mnt/iso/snippets/vendor-config.yml
+          dest: "/mnt/iso/snippets/{{ VMID.stdout }}-vendor-config.yml"
       tags: provission
 
     - name: Replace VM name in user-data 
       lineinfile:
-        dest: /mnt/iso/snippets/user-data.yml
+        dest: "/mnt/iso/snippets/{{ VMID.stdout }}-user-data.yml"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
         state: present
@@ -64,7 +64,7 @@
 
     - name: Replace VM name in meta-data 
       lineinfile:
-        dest: /mnt/iso/snippets/meta-data.yml
+        dest: "/mnt/iso/snippets/{{ VMID.stdout }}-meta-data.yml"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
         state: present
@@ -76,7 +76,7 @@
 
     - name: Replace IPADDR in network-config with "{{ _ipam2.json.data }}"
       lineinfile:
-        dest: /mnt/iso/snippets/network-config.yml
+        dest: "/mnt/iso/snippets/{{ VMID.stdout }}-network-config.yml"
         regexp: "{{ item.regexp }}"
         line: "{{ item.line }}"
         state: present
@@ -85,7 +85,7 @@
           line: "    address: {{ _ipam2.json.data }}"
 
     - name: Set cicustom location for user-data, meta-data and network-config yaml files
-      shell: qm set "{{ VMID.stdout }}" --cicustom "user=dir-iso:snippets/user-data.yml,meta=dir-iso:snippets/meta-data.yml,network=dir-iso:snippets/network-config.yml,vendor=dir-iso:snippets/vendor-config.yml"
+      shell: qm set "{{ VMID.stdout }}" --cicustom "user=dir-iso:snippets/{{ VMID.stdout }}-user-data.yml,meta=dir-iso:snippets/{{ VMID.stdout }}-meta-data.yml,network=dir-iso:snippets/{{ VMID.stdout }}-network-config.yml,vendor=dir-iso:snippets/{{ VMID.stdout }}-vendor-config.yml"
       tags: provission
 
     - name: Set onboot to true
@@ -125,6 +125,16 @@
       wait_for:
         timeout: 15
       tags: provission
+
+    # Use variables to create new hosts and groups in inventory for use in later plays of the same playbook.
+    - name: Add new host to inventory "{{ VM_name + '.' + domain }}"
+      add_host:
+        hostname: "{{ VM_name + '.' + domain }}"
+        inventory_dir: /etc/ansible/
+        groups: 
+        - zabbixhosts
+        - wazuh
+        - labmice
 
     # end of script hopefully
 

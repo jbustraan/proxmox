@@ -1,0 +1,20 @@
+#### main.yml for role proxmox_remove
+---
+    - name: Stop VM "{{ VM_name }}" on proxmox host "{{ Node_name }}" via API
+      proxmox_kvm:
+        api_user: root@pam
+        api_password: 2morrow!!
+        api_host: "{{ Node_name }}"
+        name: "{{ VM_name }}"
+        node: "{{ Node_name }}"
+        state: stopped
+        timeout: 90
+  
+    - name: Remove "{{ VM_name }}" on proxmox host "{{ Node_name }}" via API
+      proxmox_kvm:
+        api_user: root@pam
+        api_password: 2morrow!!
+        api_host: "{{ Node_name }}"
+        name: "{{ VM_name }}"
+        node: "{{ Node_name }}"
+        state: absent

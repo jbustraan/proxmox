@@ -1,0 +1,34 @@
+---
+- name: "Remove IPAM entries for VM"
+  #  vars_prompt:
+  #  - name: VM_name
+    #    prompt: "Virtual machine name"
+    #    private: no
+    #    default: testvm107
+    #  - name: Node_name
+    #    prompt: "pve1 or pve2"
+    #    private: no
+    #    default: pve1
+    #vars_files: 
+    #  - vars.yml
+  hosts: "{{ VM_name }}"
+  gather_facts: true
+  tasks:
+  roles:
+    - ipam_remove
+
+- name: "Restart DNS recursor service"
+  hosts: dns.bustraan.lab
+  become:  yes
+  tasks:
+  roles:
+    - pdns_remove
+
+- name: "Destroy proxmox lab hosts that are no longer needed"
+  gather_facts: false
+  hosts: "{{ Node_name }}"
+  tasks:
+  become:  yes
+  roles:
+    - proxmox_remove
+
