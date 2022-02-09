@@ -1,0 +1,49 @@
+### script to test url: built-in
+### phpipam - create new address
+---
+- hosts: localhost
+  become: yes
+  vars:
+    - VM_name: testvm1000
+    - VM_IP: 192.168.1.200
+
+  tasks:
+  - name: Login to API and get token 
+    uri: 
+      url: https://ipam.bustraan.lab/api/ipam1/user/
+      user: apiuser
+      method: POST
+      password: APIforever22
+      force_basic_auth: yes
+      status_code: 200
+      validate_certs: no
+    register: _result
+
+  - name: Print login _result
+    debug: 
+      msg: 
+        - "{{ _result.status }}"
+        - "{{ _result.json.data.token }}"
+          #- "{{ _result.cookies.phpipam }}"
+
+  - name: Get next IP and login using cookie {{ _result.json.data.token }}
+    uri:
+      url: https://ipam.bustraan.lab/api/ipam1/addresses/first_free/9/
+      method: POST
+      status_code: 
+        - 200
+        - 201
+      validate_certs: no
+      headers:
+        "token": "{{ _result.json.data.token }}"
+    register: _result2
+
+  - name: Print new IP address
+    debug: 
+      msg: 
+        - "{{ _result2.json.code }}"
+        - "{{ _result2.json.data }}"
+        - "{{ _result2.json.id }}"
+        - "{{ _result2.json.message }}"
+
+

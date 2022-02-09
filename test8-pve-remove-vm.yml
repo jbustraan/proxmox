@@ -1,0 +1,34 @@
+#### remove pve vm test script
+---
+- hosts: pve1.bustraan.lab
+  become: yes
+  vars_prompt:
+    - name: VM_name
+      prompt: "Virtual machine name"
+      private: no
+      default: testvm107
+
+  vars:
+    - node: pve1
+
+  tasks:
+
+  - name: Stop VM
+    proxmox_kvm:
+      api_user: root@pam
+      api_password: 2morrow!!
+      api_host: pve2.bustraan.lab
+      name: "{{ VM_name }}"
+      node: "{{ node }}"
+      state: stopped
+      timeout: 120
+
+  - name: Remove VM
+    proxmox_kvm:
+      api_user: root@pam
+      api_password: 2morrow!!
+      api_host: pve2.bustraan.lab
+      name: "{{ VM_name }}"
+      node: "{{ node }}"
+      state: absent
+
