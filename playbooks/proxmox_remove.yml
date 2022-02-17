@@ -1,4 +1,5 @@
 ---
+### another proxmox_remove comment
 - name: "Remove IPAM entries for VM"
   #  vars_prompt:
   #  - name: VM_name
