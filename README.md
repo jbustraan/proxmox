@@ -11,8 +11,8 @@ $ ansible-playbook -i hosts playbooks/proxmox_remove.yml --extra-vars '{"VM_name
 
 $ ansible-playbook playbooks/proxmox_deploy.yml
 * Deploy VM's requires vars set interactively from the CLI.  Follow the prompts
-** added sub-bullet 1
-** added sub-bullet 2
+ ** added sub-bullet 1
+ ** added sub-bullet 2
 
 ## ipam delete playbook using extra-vars
 
