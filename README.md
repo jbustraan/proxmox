@@ -1,7 +1,7 @@
 # proxmox ansible scripts
 
 ## proxmox-remove role
-$ ansible-playbook -i hosts playbooks/proxmox_remove.yml --extra-vars '{"VM_name":"testvm130","Node_name":"pve1"}'
+$ ansible-playbook -i hosts playbooks/proxmox_remove.yml --extra-vars '{"VM_name":"nextcloudVM","Node_name":"pve1"}'
 
 * Remove VM's requires extra-vars to set global variables. 
 * Also the VM_name and Node_name variables must have matching "hosts" file entries
