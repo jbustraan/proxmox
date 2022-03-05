@@ -10,12 +10,12 @@
     - name: Cloning virtual machine on pve1 from template almalinux8-template-9001 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
       shell: qm clone 9001 "{{ VMID.stdout }}" --name "{{ VM_name }}"
       register: clone_status
-      when: PV_node == "pve1"
+      when: PV_node == "pve1" or PV_node == "pve1.bustraan.lab"
 
     - name: Cloning virtual machine on pve2 from template almalinux8-template-9002 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
       shell: qm clone 9002 "{{ VMID.stdout }}" --name "{{ VM_name }}"
       register: clone_status
-      when: PV_node == "pve2"
+      when: PV_node == "pve2" or PV_node == "pve2.bustraan.lab"
       
       #- name: Cloning virtual machine from "{{ VM_template }}" with name "{{ VM_name }}" and "{{ VMID.stdout }}"
       #shell: qm clone "{{ VM_template_ID }}" "{{ VMID.stdout }}" --name "{{ VM_name }}"
@@ -84,7 +84,7 @@
         - regexp: "^    address: IPADDR"
           line: "    address: {{ _ipam2.json.data }}"
 
-    - name: Set cicustom location for user-data, meta-data and network-config yaml files
+    - name: Set cicustom location for user-data, meta-data and network-config yaml files "{{ VMID.stdout }}"
       shell: qm set "{{ VMID.stdout }}" --cicustom "user=dir-iso:snippets/{{ VMID.stdout }}-user-data.yml,meta=dir-iso:snippets/{{ VMID.stdout }}-meta-data.yml,network=dir-iso:snippets/{{ VMID.stdout }}-network-config.yml,vendor=dir-iso:snippets/{{ VMID.stdout }}-vendor-config.yml"
       tags: provission
 
