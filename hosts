@@ -1,3 +1,8 @@
+master-01
+worker-01
+worker-02
+worker-03
+worker-04
 dns.bustraan.lab
 testvm101
 
@@ -31,3 +36,10 @@ nodejs-api1
 nodejs-api2
 nodejs-api3
 nodejs-api4
+
+[k8s]
+master-01
+worker-01
+worker-02
+worker-03
+worker-04

@@ -50,6 +50,8 @@ packages:
  - wget
  - qemu-guest-agent
 
+package_upgrade: true
+
 resize_rootfs: true
 
 swap:
