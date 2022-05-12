@@ -2,8 +2,8 @@
 
 users:
   - name: jbustraan
-    ssh_pwauth: yes #  sshd will be configured to accept password authentication
-    password: '2morrow!!' # Set a password for almalinux Cloud User
+    ssh_pwauth: false #  sshd will be configured to accept password authentication
+    password: 'cloudinit22' # Set a password for almalinux Cloud User
     chpasswd:
       expire: false
     ssh_authorized_keys:
@@ -13,8 +13,8 @@ users:
     groups: sudo
     shell: /bin/bash
   - name: ansible
-    ssh_pwauth: yes #  sshd will be configured to accept password authentication
-    password: '2morrow!!' # Set a password for almalinux Cloud User
+    ssh_pwauth: false #  sshd will be configured to accept password authentication
+    password: 'cloudinit22' # Set a password for almalinux Cloud User
     chpasswd:
       expire: false
     ssh_authorized_keys:
@@ -24,8 +24,7 @@ users:
     shell: /bin/bash
 chpasswd:
   list: |
-    root:2morrow!!
-    jbustraan:2morrow!!
+    root:cloudinit22
   expire: False
 
 preserve_hostname: false
