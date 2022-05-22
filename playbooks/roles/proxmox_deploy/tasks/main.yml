@@ -7,13 +7,13 @@
     - name: Register new IP address with phpIPAM
       include_tasks: ipam.yml
 
-    - name: Cloning virtual machine on pve1 from template almalinux8-template-9003 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
-      shell: qm clone 9003 "{{ VMID.stdout }}" --name "{{ VM_name }}"
+    - name: Cloning virtual machine on pve1 from template almalinux8-mdisk-template-9005 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
+      shell: qm clone 9005 "{{ VMID.stdout }}" --name "{{ VM_name }}"
       register: clone_status
       when: PV_node == "pve1" or PV_node == "pve1.bustraan.lab"
 
-    - name: Cloning virtual machine on pve2 from template almalinux8-template-9004 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
-      shell: qm clone 9004 "{{ VMID.stdout }}" --name "{{ VM_name }}"
+    - name: Cloning virtual machine on pve2 from template almalinux8-mdisk-template-9006 with name "{{ VM_name }}" and "{{ VMID.stdout }}"
+      shell: qm clone 9006 "{{ VMID.stdout }}" --name "{{ VM_name }}"
       register: clone_status
       when: PV_node == "pve2" or PV_node == "pve2.bustraan.lab"
       
